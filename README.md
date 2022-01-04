@@ -5,11 +5,11 @@ Code is part of bigger project found on GitHub :
 https://github.com/jrreich/MEO_Analysis_HTML_Interface
  
 Full credits to its author - I have just repackaged it for some tests.
- 
- 
+
 ## Usage 
 ### From the terminal line
-see the details from the command line
+Check the details from the command line.
+By default only Standard Location protocol with long message and MMSI id is directly supported.  
 
 ### Example as a module
 

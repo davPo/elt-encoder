@@ -181,7 +181,7 @@ setup(
     # executes the function `main` from this package when invoked:
     entry_points={  # Optional
         'console_scripts': [
-            'elt_encoder=elt_encoder:main',
+            'elt_encoder=encoder:main',
         ],
     },
 

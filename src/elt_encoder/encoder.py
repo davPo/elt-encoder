@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import argparse
 import sys,os
+
 from .definitions import *
 from .helpers import *
 
@@ -76,7 +77,7 @@ class PDF1(ProtectedDataField):
     @country.setter
     def country(self, v):
         try:
-            code=([k for k, ccode in definitions.countrydic.items() if v == ccode])
+            code=([k for k, ccode in countrydic.items() if v == ccode])
             self.__country = dec2bin(code[0], 10) # France has 3 numbers ?
         except IndexError:
             raise ValueError('Country Code not found')
@@ -108,7 +109,7 @@ class STANDARD_LOCATION():
         self.country = 'France'
         self.protocol_code = '0010' # EPIRB-MMSI # bits 37-39
         self.serialid = 2
-        self.identification = '01111011100100101001' #TODO
+        self.identification = '01111011100100101001'
         self.supplementary = '1101' # bits 107-112 fixed
         self.latitude = None
         self.longitude = None
@@ -211,6 +212,7 @@ class DigitalMessage():
 def main(argv):
     frame = 'test'
     protocol = 'standard'
+    identification = '01111011100100101001'
     serial = 1
     latitude = None
     longitude = None
@@ -224,7 +226,8 @@ def main(argv):
     parser.add_argument('--protocol', choices=['standard', 'national', 'userlong', 'usershort'],
                         help='Location Protocol')
     parser.add_argument('--country', type=str, help='Country')
-    parser.add_argument('--serial', type=int, help='EPIRB serial number 0-15')
+    parser.add_argument('--mmsi', type=str, help="MMSI Id 20 bit string")
+    parser.add_argument('--serial', type=int, help='MMSI s/n 0 to 15')
     parser.add_argument('--coordinates', type=float, nargs=2, help='Lat Lon as dd.ddddd')
     parser.add_argument('--longitude', type=float, help='Longitude dd.ddddd')
     parser.add_argument('--homing', action='store_const', const=1, help='specify if Homing')
@@ -237,9 +240,16 @@ def main(argv):
         protocol = args.protocol
     if args.country:
         country = args.country
+    if args.mmsi:
+        if (len(args.mmsi == 20)):
+            identification = args.mmsi
+        else:
+            raise ValueError('mmsi should be 20 bits')
     if args.serial:
-        if (args.serial >= 1) and (args.serial < 16384):
+        if (args.serial >= 1) and (args.serial < 15):
             serial = args.serial
+        else:
+            raise  ValueError('serial should be between 1 et 15')
     if args.coordinates:
         latitude = args.coordinates[0]
         longitude = args.coordinates[1]
@@ -252,6 +262,7 @@ def main(argv):
 
     digital_msg = DigitalMessage( frame, protocol)
     digital_msg.message.country = country
+    digital_msg.message.identification = identification
     digital_msg.message.serialid = serial
     digital_msg.message.latitude = latitude
     digital_msg.message.longitude = longitude
