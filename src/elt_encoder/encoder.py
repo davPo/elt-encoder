@@ -43,7 +43,7 @@ class PDF1(ProtectedDataField):
         self.protocol = protocol
         self.__hexid = '2024F72524FFBFF'
         self.data = ''
-        self.__country = '0100000001' # normway
+        self.__country = '0100000001' # Norway
 
     # @property
     # def format(self):
@@ -63,12 +63,15 @@ class PDF1(ProtectedDataField):
 
     @property
     def hexid(self):
+        self.__hexid = bin2hex2(self.data[1:])
         return self.__hexid
 
     @hexid.setter
     def hexid(self, v):
         self.__hexid = v
-        self.data = str(self.format) + str(self.protocol) + hextobin(self.hexid)
+        bits = hextobin(self.hexid)
+        self.protocol = bits[0]
+        self.data = str(self.format) + bits
 
     @property
     def country(self):
@@ -172,13 +175,16 @@ class DigitalMessage():
 
     def __init__(self, mode, protocol):
         self.__bitstring = ''
+        self.message = None
         if mode == 'emergency':
             self.frame = self.FRAME_NORMAL
         else:
             self.frame = self.FRAME_TEST
-
         if protocol == 'standard':
             self.message = STANDARD_LOCATION()
+            if mode == 'test': # 4.5.4 Beacon Self-Test Mode
+                self.message.longitude = None
+                self.message.latitude = None
         else:
             raise ValueError("Unsupported Sarsat Protocol")
 
@@ -194,16 +200,20 @@ class DigitalMessage():
     @property
     def bitlist(self):
         self.update()
-        bits = "["
+        bits = []
         for b in self.__bitstring:
-            bits = bits + b+ ','
-        bits = bits[:-1] + "]"
+            bits.append(int(b))
         return bits
 
     @property
     def hexstring(self):
         self.update()
         return hex(int(self.__bitstring,2))
+
+    @property
+    def hexidstring(self):
+        self.update()
+        return self.message.pdf1.hexid
 
     def __len__(self):
         return len(self.__bitstring)
@@ -218,7 +228,6 @@ def main(argv):
     longitude = None
     homing = 0
     country = 'Belgium'
-    gnuradio = 0
     output_t = None
 
     parser = argparse.ArgumentParser()
@@ -231,7 +240,7 @@ def main(argv):
     parser.add_argument('--coordinates', type=float, nargs=2, help='Lat Lon as dd.ddddd')
     parser.add_argument('--longitude', type=float, help='Longitude dd.ddddd')
     parser.add_argument('--homing', action='store_const', const=1, help='specify if Homing')
-    parser.add_argument('--output', choices=['bitstring', 'bitlist', 'hexstring'], help='Output format')
+    parser.add_argument('--output', choices=['bitstring', 'bitlist', 'hexstring', 'hexid], help='Output format')
     args = parser.parse_args()
 
     if args.frame:
@@ -274,13 +283,14 @@ def main(argv):
         print(digital_msg.bitlist)
     elif output_t == 'hexstring':
         print(digital_msg.hexstring)
+    elif output_t == 'hexid':
+        print(digital_msg.hexidstring)
     else:
         digital_msg.update()
         print("PDF1={} bits - Data={} - BCH={}".format(len(digital_msg.message.pdf1), digital_msg.message.pdf1.data, digital_msg.message.pdf1.bch))
         print("PDF2={} bits - Data={} - BCH={}".format(len(digital_msg.message.pdf2), digital_msg.message.pdf2.data, digital_msg.message.pdf2.bch))
         print("PDF1={} bits - PDF2={} bits - Total {} bits".format(len(digital_msg.message.pdf1),
                                                                    len(digital_msg.message.pdf2), len(digital_msg)))
-
 
 if __name__ == "__main__":
     main(sys.argv[1:])

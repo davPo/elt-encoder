@@ -167,10 +167,6 @@ def latlongresolution(binary, startpos, endpos):
             signlong = 1
             lndir = 'positive'
 
-
-
-
-
     elif l == 14:
         # National Location Protocol is 14 bits of data.
         # Only 2 bits for minutes of max 3 minute adjustment
