@@ -240,7 +240,7 @@ def main(argv):
     parser.add_argument('--coordinates', type=float, nargs=2, help='Lat Lon as dd.ddddd')
     parser.add_argument('--longitude', type=float, help='Longitude dd.ddddd')
     parser.add_argument('--homing', action='store_const', const=1, help='specify if Homing')
-    parser.add_argument('--output', choices=['bitstring', 'bitlist', 'hexstring', 'hexid], help='Output format')
+    parser.add_argument('--output', choices=['bitstring', 'bitlist', 'hexstring', 'hexid'], help='Output format')
     args = parser.parse_args()
 
     if args.frame:
